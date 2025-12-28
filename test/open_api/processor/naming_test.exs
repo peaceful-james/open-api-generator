@@ -154,39 +154,11 @@ defmodule OpenAPI.Processor.NamingTest do
         Naming.normalize_identifier("123", :camel)
       end
     end
-
-    test "does not raise when numerical identifier is renamed" do
-      Application.put_env(:oapi_generator, @profile, naming: [rename: [{"123", "S123"}]])
-      assert Naming.normalize_identifier("123") == "S123"
-    end
   end
 
   describe "raw_schema_module_and_type/3" do
-    test "returns schema module and type", %{state: state} do
-      state =
-        state
-        |> Map.put(:implementation, OpenAPI.Processor)
-        |> Map.put(:schemas_by_ref, %{
-          "ref" => %OpenAPI.Processor.Schema{
-            ref: "ref",
-            module_name: SchemaModuleName,
-            type_name: "t"
-          }
-        })
-        |> Map.put(:schema_specs_by_ref, %{"ref" => %OpenAPI.Spec.Schema{}})
-
-      assert Naming.raw_schema_module_and_type(
-               state,
-               %OpenAPI.Processor.Schema{
-                 context: [{:field, "ref", "test"}],
-                 output_format: :struct
-               },
-               %OpenAPI.Spec.Schema{}
-             ) == {"SchemaModuleNameTest", "t"}
-    end
-
-    test "normalizes field names based on output format", %{state: state} do
-      state =
+    setup context do
+      Map.update!(context, :state, fn state ->
         state
         |> Map.put(:implementation, OpenAPI.Processor)
         |> Map.put(:schemas_by_ref, %{
@@ -202,7 +174,21 @@ defmodule OpenAPI.Processor.NamingTest do
           }
         })
         |> Map.put(:schema_specs_by_ref, %{"ref" => %OpenAPI.Spec.Schema{}})
+      end)
+    end
 
+    test "returns schema module and type", %{state: state} do
+      assert Naming.raw_schema_module_and_type(
+               state,
+               %OpenAPI.Processor.Schema{
+                 context: [{:field, "ref", "test"}],
+                 output_format: :struct
+               },
+               %OpenAPI.Spec.Schema{}
+             ) == {"SchemaModuleNameTest", "t"}
+    end
+
+    test "normalizes field names based on output format", %{state: state} do
       assert Naming.raw_schema_module_and_type(
                state,
                %OpenAPI.Processor.Schema{
@@ -256,6 +242,20 @@ defmodule OpenAPI.Processor.NamingTest do
                },
                %OpenAPI.Spec.Schema{}
              ) == {"SchemaModuleName", "something_else_test_field"}
+    end
+
+    test "does not raise when numerical identifier is renamed", context do
+      %{state: state} = context
+      Application.put_env(:oapi_generator, @profile, naming: [rename: [{"123", "S123"}]])
+
+      assert Naming.raw_schema_module_and_type(
+               state,
+               %OpenAPI.Processor.Schema{
+                 context: [{:field, "ref", "123"}],
+                 output_format: :struct
+               },
+               %OpenAPI.Spec.Schema{}
+             ) == {"SchemaModuleNameTest", "t"}
     end
   end
 end
