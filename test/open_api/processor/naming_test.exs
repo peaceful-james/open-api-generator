@@ -90,20 +90,20 @@ defmodule OpenAPI.Processor.NamingTest do
   describe "rename_schema/2" do
     test "does nothing by default", %{state: state} do
       Application.put_env(:oapi_generator, @profile, naming: [rename: []])
-      assert Naming.rename_schema({"RenamedSchema", "t"}, state) == {"RenamedSchema", "t"}
+      assert Naming.rename_schema("RenamedSchema", state) == "RenamedSchema"
     end
 
     test "renames using string patterns", %{state: state} do
       Application.put_env(:oapi_generator, @profile, naming: [rename: [{"Abc", "ABC"}]])
-      assert Naming.rename_schema({"SomethingAbC", "t"}, state) == {"SomethingAbC", "t"}
-      assert Naming.rename_schema({"SomethingAbc", "t"}, state) == {"SomethingABC", "t"}
-      assert Naming.rename_schema({"SomeAbcAbcThing", "t"}, state) == {"SomeABCABCThing", "t"}
+      assert Naming.rename_schema("SomethingAbC", state) == "SomethingAbC"
+      assert Naming.rename_schema("SomethingAbc", state) == "SomethingABC"
+      assert Naming.rename_schema("SomeAbcAbcThing", state) == "SomeABCABCThing"
     end
 
     test "renames using regex patterns", %{state: state} do
       Application.put_env(:oapi_generator, @profile, naming: [rename: [{~r/^Def/, "DEF"}]])
-      assert Naming.rename_schema({"SomethingDef", "t"}, state) == {"SomethingDef", "t"}
-      assert Naming.rename_schema({"DefSomething", "t"}, state) == {"DEFSomething", "t"}
+      assert Naming.rename_schema("SomethingDef", state) == "SomethingDef"
+      assert Naming.rename_schema("DefSomething", state) == "DEFSomething"
     end
   end
 
