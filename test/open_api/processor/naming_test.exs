@@ -154,6 +154,11 @@ defmodule OpenAPI.Processor.NamingTest do
         Naming.normalize_identifier("123", :camel)
       end
     end
+
+    test "does not raise when numerical identifier is renamed" do
+      Application.put_env(:oapi_generator, @profile, naming: [rename: [{"123", "S123"}]])
+      assert Naming.normalize_identifier("123") == "S123"
+    end
   end
 
   describe "raw_schema_module_and_type/3" do
