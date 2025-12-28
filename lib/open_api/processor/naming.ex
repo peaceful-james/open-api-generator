@@ -572,7 +572,7 @@ defmodule OpenAPI.Processor.Naming do
   end
 
   defp raise_for_invalid_identifier(input) do
-    if String.match?(input, ~r/^[^A-Za-z]+$/) do
+    if !String.match?(input, ~r/^[A-Za-z][A-Za-z0-9]+$/) do
       raise ArgumentError, """
       Identifier #{input} cannot be normalized
 
