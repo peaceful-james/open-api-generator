@@ -126,7 +126,7 @@ defmodule OpenAPI.Processor.Naming do
         modules
         |> Enum.map(fn module ->
           normalize_identifier(module, :camel)
-          |> do_rename_schema(state)
+          |> rename_schema(state)
         end)
         |> Module.concat()
       end
@@ -138,7 +138,7 @@ defmodule OpenAPI.Processor.Naming do
           |> String.split("/", trim: true)
           |> Enum.map(fn module ->
             normalize_identifier(module, :camel)
-            |> do_rename_schema(state)
+            |> rename_schema(state)
           end)
           |> Module.concat()
         end)
@@ -230,7 +230,6 @@ defmodule OpenAPI.Processor.Naming do
     {module, type} =
       raw_schema_module_and_type(state, schema, schema_spec)
       |> merge_schema(state)
-      |> rename_schema(state)
       |> group_schema(state)
 
     if is_nil(module) do
@@ -402,15 +401,11 @@ defmodule OpenAPI.Processor.Naming do
   use capture expressions (ex. `~r/(Api)([A-Z]|$)/`) and replacements that reference those
   captures (ex. `"API\\\\2"`). See `String.replace/3` for more information.
   """
-  @spec rename_schema(raw_module_and_type, State.t()) :: raw_module_and_type
-  def rename_schema(raw_module_and_type, state)
-  def rename_schema({nil, type}, _state), do: {nil, type}
+  @spec rename_schema(module, State.t()) :: module
+  def rename_schema(raw_module, state)
+  def rename_schema(nil, _state), do: nil
 
-  def rename_schema({module, type}, state) do
-    {do_rename_schema(module, state), type}
-  end
-
-  defp do_rename_schema(module, state) do
+  def rename_schema(module, state) do
     replacements = config(state)[:rename] || []
 
     Enum.reduce(replacements, module, fn {pattern, replacement}, module ->
@@ -696,6 +691,8 @@ defmodule OpenAPI.Processor.Naming do
         %Schema{module_name: parent_module, type_name: parent_type} ->
           {inspect(parent_module), to_string(parent_type)}
       end
+
+    field_name = rename_schema(field_name, state)
 
     module = Enum.join([parent_module, normalize_identifier(field_name, :camel)])
     {module, parent_type}
