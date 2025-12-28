@@ -126,32 +126,36 @@ defmodule OpenAPI.Processor.NamingTest do
   end
 
   describe "normalize_identifier/1" do
-    test "normalizes identifiers" do
-      assert Naming.normalize_identifier("example") == "example"
-      assert Naming.normalize_identifier("example", :camel) == "Example"
+    setup :setup_for_schema_module_and_type
 
-      assert Naming.normalize_identifier("example_op") == "example_op"
-      assert Naming.normalize_identifier("example_op", :camel) == "ExampleOp"
+    test "normalizes identifiers", %{state: state} do
+      assert Naming.normalize_identifier("example", state) == "example"
+      assert Naming.normalize_identifier("example", state, :camel) == "Example"
 
-      assert Naming.normalize_identifier("exampleOp") == "example_op"
-      assert Naming.normalize_identifier("exampleOp", :camel) == "ExampleOp"
+      assert Naming.normalize_identifier("example_op", state) == "example_op"
+      assert Naming.normalize_identifier("example_op", state, :camel) == "ExampleOp"
 
-      assert Naming.normalize_identifier("mod_{NAME}/example-Op") == "mod_name_example_op"
-      assert Naming.normalize_identifier("mod_{NAME}/example-Op", :camel) == "ModNAMEExampleOp"
+      assert Naming.normalize_identifier("exampleOp", state) == "example_op"
+      assert Naming.normalize_identifier("exampleOp", state, :camel) == "ExampleOp"
+
+      assert Naming.normalize_identifier("mod_{NAME}/example-Op", state) == "mod_name_example_op"
+
+      assert Naming.normalize_identifier("mod_{NAME}/example-Op", state, :camel) ==
+               "ModNAMEExampleOp"
     end
 
-    test "preserves abbreviations" do
-      assert Naming.normalize_identifier("OpenAPISpec") == "open_api_spec"
-      assert Naming.normalize_identifier("OpenAPISpec", :camel) == "OpenAPISpec"
+    test "preserves abbreviations", %{state: state} do
+      assert Naming.normalize_identifier("OpenAPISpec", state) == "open_api_spec"
+      assert Naming.normalize_identifier("OpenAPISpec", state, :camel) == "OpenAPISpec"
     end
 
-    test "raises for numerical identifiers" do
+    test "raises for numerical identifiers", %{state: state} do
       assert_raise ArgumentError, fn ->
-        Naming.normalize_identifier("123")
+        Naming.normalize_identifier("123", state)
       end
 
       assert_raise ArgumentError, fn ->
-        Naming.normalize_identifier("123", :camel)
+        Naming.normalize_identifier("123", state, :camel)
       end
     end
   end
