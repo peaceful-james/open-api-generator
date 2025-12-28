@@ -255,7 +255,7 @@ defmodule OpenAPI.Processor.NamingTest do
                  output_format: :struct
                },
                %OpenAPI.Spec.Schema{}
-             ) == {"SchemaModuleNameTest", "t"}
+             ) == {"SchemaModuleNameTest", "S123"}
     end
   end
 end
